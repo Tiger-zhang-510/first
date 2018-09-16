@@ -3,8 +3,13 @@
    <div class="goods">
    <div class="menu-wrapper" ref="menuWrapper">
      <ul>
-       <li v-for="(item,index) in goods" class="menu-item"
-       @click="selectMenu(index,$event)" :class="{'current':currentIndex === index}">
+       <li 
+         v-for="(item,index) in goods" 
+         :key="item.id" 
+         class="menu-item"
+         :class="{'current':currentIndex === index}"
+         @click="selectMenu(index,$event)"         
+        >
          <span class="text border-1px">
            <span v-show="item.type>0" class="icon" :class="classMap[item.type]"></span>{{item.name}}
          </span>
@@ -13,7 +18,7 @@
    </div>
    <div class="foods-wrapper" ref="foodsWrapper">
      <ul>
-       <li v-for="item in goods" class="food-list food-list-hook">
+       <li v-for="item in goods" :key="item.id" class="food-list food-list-hook">
          <h1 class="title">{{item.name}}</h1>
          <ul>
            <li @click="selectFood(food,$event)" v-for="food in item.foods" class="food-item border-1px">
@@ -54,9 +59,9 @@ import BScroll from 'better-scroll';
    data () {
      return {
        goods:[],
-       listHeight:[],
+       listHeight:[],//存储区块的高度
        scrollY:0,
-       selectedFood:{},
+       selectedFood:{},//一开始是空对象，点击food的时候再存入，在li(food)中添加点击事件
      }
    },
    props:{
@@ -65,7 +70,7 @@ import BScroll from 'better-scroll';
      }
    },
    created(){
-     this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'],
+     this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
      this.$axios.get('api/goods')
      .then((res)=>{
        this.goods = res.data.data
@@ -76,8 +81,10 @@ import BScroll from 'better-scroll';
        })
      })
    },
-   methods:{
+   methods:{ //父组件goods.vue中进行监听
      getFood(el){
+       //拿到traget(DOM对象)之后，将其传入shopcart组件中drop(target){}方法，
+       //此处用this.$refs调用子组件,访问DOM时用的是ref="menuWrapper"
        this.$nextTick(()=>{
          this.$refs.shopcart.drop(el);
        });
@@ -94,15 +101,15 @@ import BScroll from 'better-scroll';
          return;
        }
        let foodList = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook');
-       let el = foodList[index];
-       this.foodsScroll.scrollToElement(el,300)
+       let el = foodList[index];//表示第几个节点
+       this.foodsScroll.scrollToElement(el,100)
      },
      selectFood(food,event){
        if(!event._constructed){
          return;
        }
        this.selectedFood = food;
-       this.$refs.food.show();
+       this.$refs.food.show();//调用子组件的show()方法展开food组件
      },
      _initScroll(){
        //this.$refs：取得dom对象
@@ -111,7 +118,7 @@ import BScroll from 'better-scroll';
        });
        this.foodsScroll = new BScroll(this.$refs.foodsWrapper,{
          click:true ,//取消默认阻止事件
-         probeType:3
+         probeType: 3
        });
        this.foodsScroll.on('scroll',(pos)=>{
          this.scrollY = Math.abs(Math.round(pos.y));
@@ -164,3 +171,16 @@ import BScroll from 'better-scroll';
 <style scoped lang="stylus" rel="stylesheet/stylus">
 @import "./goods.styl"                
 </style>
+// 1.实现左右两个better-scroll
+// (1)dom结构(better-scroll要求,会把最外层dom的第一个子元素作为要滚动的区域)
+
+// 2.实现联动效果
+// (1)具体的联动实现思路
+// 在渲染完成后($nextTick内),初始化better-scroll,并在初始化函数内添加右侧列表的scroll监听事件,并记录scrollY值到,存入vue的data中
+// 在渲染完成后($nextTick内),计算右侧列表的每一个大区块的高度,并累加,存入数组listHeight
+// 因为scrollY值在滚动中总是不断变化的,所以在computed中计算出currentIndex,当前滚动区域是哪一个大区块,也就是listHeight数组的下标
+// 在dom中根据currentIndex应用左侧列表被点中的样式
+// 在左侧列表某一项被点中的时候,右侧列表滑动到某一个大块区域,
+
+//通过加减号组件修改了food的count属性，要将count的变化通知其父组件goods，然后goods通过计算得出selectFoods的变化，通知到购物车组件
+//首先在goods.vue中编写selectFoods，selectFoods组件要遍历所有的goods（计算属性），selectFood是一个计算属性，它观测的就是就是goods对象，goods发生变化他会重新计算进行更新

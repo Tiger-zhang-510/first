@@ -95,7 +95,7 @@ const ALL = 2;
      }
    },
    props:{
-       food:{
+       food:{//这里的food是父组件（goods）传递过来的，需要用props接收
            type:Object,
        }
    },
@@ -144,7 +144,7 @@ const ALL = 2;
                return;
            }
            this.$emit('add',event.target); //触发当前实例food上的事件add(在goods组件上绑定在food组件的add方法
-           Vue.set(this.food,'count',1);
+           Vue.set(this.food,'count',1);//初始化this.food.count = 1
        },
    },
    filters:{

@@ -63,7 +63,7 @@ import BScroll from 'better-scroll'
  export default {
    data () {
      return {
-       balls:[
+       balls:[ //每一个成员都用来维护当前小球的状态,初始状态都是隐藏的
          {
            show:false,
            el:null,
@@ -85,8 +85,8 @@ import BScroll from 'better-scroll'
            el:null,
           }
        ],
-       droppedBalls:[],
-       fold:true,
+       droppedBalls:[],//添加一个变量，用来存贮已经下落的小球
+       fold:true,//购物车详情列表默认折叠
      }
    },
    props:{

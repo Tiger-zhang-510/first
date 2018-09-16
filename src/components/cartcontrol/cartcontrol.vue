@@ -13,23 +13,20 @@
 <script>
 import Vue from 'vue'
  export default {
-   data () {
-     return {
-     }
-   },
    props:{
        food:{
         type: Object,
        }
    },
    methods:{
+       //解决PC端双击问题
        addCart(event){
-          if(!event._constructed) {
+          if(!event._constructed) {//浏览器直接return掉,去掉自带click事件的点击
                return;
            }
         //    console.log('click')
            if(!this.food.count){
-               Vue.set(this.food, 'count', 1)
+               Vue.set(this.food, 'count', 1)//给this.food增加一个count属性，并初始化为1
            }else{
                this.food.count++
            }
